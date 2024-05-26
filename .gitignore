@@ -1,1 +1,21 @@
-venv
+=======
+# Virtual Environment
+venv/
+
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Local development files
+.vscode/
+.idea/
+
+# Configuration files
+config.py
+
+# Log files
+*.log
+
+# SQLite database file
+*.sqlite
+greenlet/
