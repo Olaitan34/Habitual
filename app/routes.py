@@ -19,3 +19,4 @@ def habit_detail(id):
     print(f"Habit detail route accessed for ID {id}")
     habit = {'name': 'Sample Habit', 'description': 'A sample habit', 'frequency': 'daily', 'link': 'http://example.com'}  # Mock habit for demonstration
     return render_template('habit.html', habit=habit)
+
