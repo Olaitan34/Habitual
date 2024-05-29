@@ -17,11 +17,11 @@ def create_app():
     migrate.init_app(app, db)
     login.init_app(app)
 
-    from .routes import main
-    from .auth import auth
+    from .main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
-    app.register_blueprint(main)
-    app.register_blueprint(auth, url_prefix='/auth')
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     return app
 
