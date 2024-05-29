@@ -1,7 +1,6 @@
-from flask import render_template, Blueprint
+from flask import render_template
+from app.main import main
 from app.models import User, Habit
-
-main = Blueprint('main', __name__)
 
 @main.route('/')
 @main.route('/index')
@@ -17,3 +16,4 @@ def user_profile(username):
 def habit_detail(id):
     habit = Habit.query.get_or_404(id)
     return render_template('habit.html', habit=habit)
+
