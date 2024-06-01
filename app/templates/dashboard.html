@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ current_user.username }}!</h1>
+    <h2>Your Habits</h2>
+    <ul>
+        {% for habit in current_user.habits %}
+            <li>
+                <strong>{{ habit.name }}</strong> - {{ habit.frequency }}<br>
+                {{ habit.description }}<br>
+                <a href="{{ habit.link }}">{{ habit.link }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <h2>Add a New Habit</h2>
+    <form method="POST" action="{{ url_for('main.add_habit') }}">
+        <label for="name">Habit Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        
+        <label for="frequency">Frequency:</label>
+        <input type="text" id="frequency" name="frequency" required><br>
+        
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description"><br>
+        
+        <label for="link">Link:</label>
+        <input type="url" id="link" name="link"><br>
+        
+        <button type="submit">Add Habit</button>
+    </form>
+    <p><a href="{{ url_for('auth.logout') }}">Logout</a></p>
+</body>
+</html>
+
+

@@ -1,47 +1,69 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
-from app import db
+from flask import Flask, render_template, redirect, url_for, request, flash
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import app, db
 from app.models import User, Habit
-from app.forms import UserForm, HabitForm
 
-main = Blueprint('main', __name__)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-@main.route('/')
-@main.route('/index')
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/')
 def index():
-    return render_template('index.html', title='Home')
+    return render_template('index.html')
 
-@main.route('/user/<username>')
-def user_profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user.html', user=user)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid username or password')
+    return render_template('login.html')
 
-@main.route('/habit/<int:id>')
-def habit_detail(id):
-    habit = Habit.query.get_or_404(id)
-    return render_template('habit.html', habit=habit)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+        else:
+            user = User(username=username, email=email, password_hash=generate_password_hash(password))
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            return redirect(url_for('dashboard'))
+    return render_template('register.html')
 
-@main.route('/create_user', methods=['GET', 'POST'])
-def create_user():
-    form = UserForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash(f'User {form.username.data} created successfully!')
-        return redirect(url_for('main.index'))
-    return render_template('create_user.html', title='Create User', form=form)
-
-@main.route('/create_habit', methods=['GET', 'POST'])
+@app.route('/dashboard')
 @login_required
-def create_habit():
-    form = HabitForm()
-    if form.validate_on_submit():
-        habit = Habit(name=form.name.data, frequency=form.frequency.data, description=form.description.data, link=form.link.data, user_id=current_user.id)
-        db.session.add(habit)
-        db.session.commit()
-        flash(f'Habit {form.name.data} created successfully!')
-        return redirect(url_for('main.index'))
-    return render_template('create_habit.html', title='Create Habit', form=form)
+def dashboard():
+    return render_template('dashboard.html', user=current_user)
+
+@app.route('/add_habit', methods=['POST'])
+@login_required
+def add_habit():
+    name = request.form['name']
+    frequency = request.form['frequency']
+    description = request.form.get('description')
+    link = request.form.get('link')
+    habit = Habit(user_id=current_user.id, name=name, frequency=frequency, description=description, link=link)
+    db.session.add(habit)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
