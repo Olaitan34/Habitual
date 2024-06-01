@@ -5,9 +5,11 @@ from app import db
 from app.models import User
 from . import auth
 from app.forms  import RegistrationForm
+from app.forms import LoginForm
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    form = LoginForm()
     if request.method == 'POST':
         if request.is_json:
             data = request.get_json()
@@ -24,7 +26,7 @@ def login():
         else:
             flash('Invalid username or password')
 
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
